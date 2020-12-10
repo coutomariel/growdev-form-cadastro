@@ -30,6 +30,7 @@ class App extends StatelessWidget {
         }
       },
       child: MaterialApp(
+        debugShowCheckedModeBanner: false,
         theme: ThemeData(
           brightness: Brightness.light,
           primaryColor: primaryColor,
@@ -161,7 +162,7 @@ class _HomePageState extends State<HomePage> {
                       Row(
                         children: [
                           Container(
-                            width: 250,
+                            width: MediaQuery.of(context).size.width * 0.5,
                             child: TextFormField(
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
@@ -189,9 +190,9 @@ class _HomePageState extends State<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            width: 280,
+                            width: MediaQuery.of(context).size.width * 0.65,
                             child: TextFormField(
-                              keyboardType: TextInputType.number,
+                              keyboardType: TextInputType.text,
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 labelText: 'Rua',
@@ -209,7 +210,7 @@ class _HomePageState extends State<HomePage> {
                           ),
                           SizedBox(height: 10),
                           Container(
-                            width: 105,
+                            width: MediaQuery.of(context).size.width * 0.28,
                             child: TextFormField(
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
@@ -234,9 +235,9 @@ class _HomePageState extends State<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            width: 200,
+                            width: MediaQuery.of(context).size.width * 0.46,
                             child: TextFormField(
-                              keyboardType: TextInputType.number,
+                              keyboardType: TextInputType.text,
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 labelText: 'Bairro',
@@ -249,14 +250,13 @@ class _HomePageState extends State<HomePage> {
                                 }
                                 return null;
                               },
-                              onSaved: (newValue) => endereco.numero = newValue,
+                              onSaved: (newValue) => endereco.bairro = newValue,
                             ),
                           ),
-                          SizedBox(height: 20),
                           Container(
-                            width: 185,
+                            width: MediaQuery.of(context).size.width * 0.46,
                             child: TextFormField(
-                              keyboardType: TextInputType.number,
+                              keyboardType: TextInputType.text,
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 labelText: 'Cidade',
@@ -279,9 +279,9 @@ class _HomePageState extends State<HomePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Container(
-                            width: 200,
+                            width: MediaQuery.of(context).size.width * 0.46,
                             child: TextFormField(
-                              keyboardType: TextInputType.number,
+                              keyboardType: TextInputType.text,
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 labelText: 'UF',
@@ -299,9 +299,9 @@ class _HomePageState extends State<HomePage> {
                           ),
                           SizedBox(height: 20),
                           Container(
-                            width: 185,
+                            width: MediaQuery.of(context).size.width * 0.46,
                             child: TextFormField(
-                              keyboardType: TextInputType.number,
+                              keyboardType: TextInputType.text,
                               decoration: InputDecoration(
                                 border: OutlineInputBorder(),
                                 labelText: 'País',
