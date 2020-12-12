@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:form_cadastro/model/endereco.dart';
 import 'package:form_cadastro/model/user.dart';
 import 'package:form_cadastro/routes/app_routes.dart';
+import 'package:form_cadastro/service/cep.service.dart';
 
 class UserForm extends StatefulWidget {
   final void Function(User) _cadastrar;
@@ -17,8 +18,16 @@ class UserForm extends StatefulWidget {
 class _UserFormState extends State<UserForm> {
   final _formKey = GlobalKey<FormState>();
 
+  final TextEditingController _cepCtrl = TextEditingController();
+  final TextEditingController _ruaCtrl = TextEditingController();
+  final TextEditingController _bairroCtrl = TextEditingController();
+  final TextEditingController _cidadeCtrl = TextEditingController();
+  final TextEditingController _ufCtrl = TextEditingController();
+  final TextEditingController _paisCtrl = TextEditingController();
+
   var user = User();
   var endereco = Endereco();
+  var _cepService = CepService();
 
   void showInformation() async {
     showDialog(
@@ -145,14 +154,22 @@ class _UserFormState extends State<UserForm> {
                                 }
                                 return null;
                               },
+                              controller: _cepCtrl,
                               onSaved: (newValue) => endereco.cep = newValue,
                             ),
                           ),
                           SizedBox(width: 20),
                           IconButton(
-                            icon: Icon(Icons.search),
-                            onPressed: () => {},
-                          ),
+                              icon: Icon(Icons.search),
+                              onPressed: () async {
+                                final data = await _cepService
+                                    .getEnderecoByCep(_cepCtrl.text);
+                                _ruaCtrl.text = data['rua'];
+                                _bairroCtrl.text = data['bairro'];
+                                _cidadeCtrl.text = data['cidade'];
+                                _ufCtrl.text = data['uf'];
+                                _paisCtrl.text = data['pais'];
+                              }),
                           Text('Buscar CEP')
                         ],
                       ),
@@ -176,6 +193,7 @@ class _UserFormState extends State<UserForm> {
                                 }
                                 return null;
                               },
+                              controller: _ruaCtrl,
                               onSaved: (newValue) => endereco.rua = newValue,
                             ),
                           ),
@@ -221,6 +239,7 @@ class _UserFormState extends State<UserForm> {
                                 }
                                 return null;
                               },
+                              controller: _bairroCtrl,
                               onSaved: (newValue) => endereco.bairro = newValue,
                             ),
                           ),
@@ -240,6 +259,7 @@ class _UserFormState extends State<UserForm> {
                                 }
                                 return null;
                               },
+                              controller: _cidadeCtrl,
                               onSaved: (newValue) => endereco.cidade = newValue,
                             ),
                           ),
@@ -265,6 +285,7 @@ class _UserFormState extends State<UserForm> {
                                 }
                                 return null;
                               },
+                              controller: _ufCtrl,
                               onSaved: (newValue) => endereco.uf = newValue,
                             ),
                           ),
