@@ -3,7 +3,7 @@ import 'package:dio/dio.dart';
 class CepService {
   final _dio = Dio(BaseOptions(baseUrl: 'https://viacep.com.br/ws'));
 
-  Future<Map<String, String>> getEnderecoByCep(String cep) async {
+  Future<Map<String, String>> getAdressByCep(String cep) async {
     var json;
     try {
       json = await _dio.get('/$cep/json');

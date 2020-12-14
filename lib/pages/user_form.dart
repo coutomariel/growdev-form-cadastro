@@ -1,56 +1,73 @@
 import 'package:cnpj_cpf_helper/cnpj_cpf_helper.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
-import 'package:form_cadastro/model/endereco.dart';
 import 'package:form_cadastro/model/user.dart';
-import 'package:form_cadastro/routes/app_routes.dart';
 import 'package:form_cadastro/service/cep.service.dart';
 
-class UserForm extends StatefulWidget {
-  final void Function(User) _cadastrar;
-
-  UserForm(this._cadastrar);
-
-  @override
-  _UserFormState createState() => _UserFormState();
-}
-
-class _UserFormState extends State<UserForm> {
+class UserForm extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
+  final Map<String, Object> _formData = {};
 
-  final TextEditingController _cepCtrl = TextEditingController();
   final TextEditingController _ruaCtrl = TextEditingController();
   final TextEditingController _bairroCtrl = TextEditingController();
   final TextEditingController _cidadeCtrl = TextEditingController();
   final TextEditingController _ufCtrl = TextEditingController();
   final TextEditingController _paisCtrl = TextEditingController();
 
-  var user = User();
-  var endereco = Endereco();
-  var _cepService = CepService();
+  String _validFieldNotEmpty(String value) {
+    if (value.isEmpty) {
+      return 'Campo não pode ser vazio.';
+    }
+    return null;
+  }
 
-  void showInformation() async {
-    showDialog(
-      context: context,
-      child: SimpleDialog(
-        title: Text('Informações do usuário'),
-        contentPadding: EdgeInsets.all(20),
-        titlePadding: EdgeInsets.all(20),
-        children: [
-          Text('Nome: ${user.nome}'),
-          Text('Email: ${user.email}'),
-          Text('CPF: ${user.cpf}'),
-          Text('CEP: ${endereco.cep}'),
-          Text('Rua: ${endereco.rua} Número: ${endereco.numero}'),
-          Text('Bairro: ${endereco.bairro} Cidade: ${endereco.cidade}'),
-          Text('UF: ${endereco.uf} País: ${endereco.pais}'),
-        ],
-      ),
-    );
+  String _validEmail(String value) {
+    final emailInvalido = !EmailValidator.validate(value);
+    if (emailInvalido) {
+      return '- Email inválido';
+    }
+    return null;
+  }
+
+  String _validCPF(String value) {
+    if (!CnpjCpfBase.isCpfValid(value)) {
+      return '- Cpf inválido';
+    }
+    return null;
+  }
+
+  Future<void> _loadAdress() async {
+    final _cepService = CepService();
+    final data = await _cepService.getAdressByCep(_formData['cep']);
+
+    _ruaCtrl.text = data['rua'];
+    _bairroCtrl.text = data['bairro'];
+    _cidadeCtrl.text = data['cidade'];
+    _ufCtrl.text = data['uf'];
+    _paisCtrl.text = data['pais'];
+  }
+
+  void _loadUser(User user) {
+    _formData['id'] = user.id;
+    _formData['nome'] = user.nome;
+    _formData['email'] = user.email;
+    _formData['cpf'] = user.cpf;
+    _formData['cep'] = user.cep;
+    _ruaCtrl.text = user.rua;
+    _formData['numero'] = user.numero;
+    _bairroCtrl.text = user.bairro;
+    _cidadeCtrl.text = user.cidade;
+    _ufCtrl.text = user.uf;
+    _paisCtrl.text = user.pais;
   }
 
   @override
   Widget build(BuildContext context) {
+    Map<String, Object> arguments = ModalRoute.of(context).settings.arguments;
+    final void Function(User) _fn = arguments['fn'];
+    final User _user = arguments['user'];
+    if (_user != null) _loadUser(_user);
+
     return Scaffold(
       appBar: AppBar(
         title: Center(
@@ -74,13 +91,9 @@ class _UserFormState extends State<UserForm> {
                           labelText: 'Nome completo',
                         ),
                         autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value) {
-                          if (value.isEmpty) {
-                            return 'Campo não pode estar vazio';
-                          }
-                          return null;
-                        },
-                        onSaved: (newValue) => user.nome = newValue,
+                        initialValue: _formData['nome'],
+                        validator: (value) => _validFieldNotEmpty(value),
+                        onSaved: (value) => _formData['nome'] = value,
                       ),
                       SizedBox(height: 10),
                       TextFormField(
@@ -90,24 +103,9 @@ class _UserFormState extends State<UserForm> {
                           labelText: 'Email',
                         ),
                         autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value) {
-                          var msg = '';
-
-                          if (value.isEmpty) {
-                            msg += '- Campo não pode ser vazio\n';
-                          }
-
-                          final emailInvalido = !EmailValidator.validate(value);
-                          if (emailInvalido) {
-                            msg += '- Email inválido';
-                          }
-                          if (msg.isEmpty) {
-                            return null;
-                          } else {
-                            return msg;
-                          }
-                        },
-                        onSaved: (newValue) => user.email = newValue,
+                        initialValue: _formData['email'],
+                        validator: (value) => _validEmail(value),
+                        onSaved: (value) => _formData['email'] = value,
                       ),
                       SizedBox(height: 10),
                       TextFormField(
@@ -117,29 +115,15 @@ class _UserFormState extends State<UserForm> {
                           labelText: 'CPF',
                         ),
                         autovalidateMode: AutovalidateMode.onUserInteraction,
-                        validator: (value) {
-                          var msg = '';
-
-                          if (value.isEmpty) {
-                            msg += '- Campo não pode ser vazio\n';
-                          }
-                          if (!CnpjCpfBase.isCpfValid(value)) {
-                            msg += '- Cpf inválido';
-                          }
-
-                          if (msg.isEmpty) {
-                            return null;
-                          } else {
-                            return msg;
-                          }
-                        },
-                        onSaved: (newValue) => user.cpf = newValue,
+                        initialValue: _formData['cpf'],
+                        validator: (value) => _validCPF(value),
+                        onSaved: (value) => _formData['cpf'] = value,
                       ),
                       SizedBox(height: 10),
                       Row(
                         children: [
-                          Container(
-                            width: MediaQuery.of(context).size.width * 0.5,
+                          Expanded(
+                            flex: 5,
                             child: TextFormField(
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
@@ -148,28 +132,16 @@ class _UserFormState extends State<UserForm> {
                               ),
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Campo não pode estar vazio';
-                                }
-                                return null;
-                              },
-                              controller: _cepCtrl,
-                              onSaved: (newValue) => endereco.cep = newValue,
+                              initialValue: _formData['cep'],
+                              validator: (value) => _validFieldNotEmpty(value),
+                              onSaved: (value) => _formData['cep'] = value,
                             ),
                           ),
                           SizedBox(width: 20),
                           IconButton(
-                              icon: Icon(Icons.search),
-                              onPressed: () async {
-                                final data = await _cepService
-                                    .getEnderecoByCep(_cepCtrl.text);
-                                _ruaCtrl.text = data['rua'];
-                                _bairroCtrl.text = data['bairro'];
-                                _cidadeCtrl.text = data['cidade'];
-                                _ufCtrl.text = data['uf'];
-                                _paisCtrl.text = data['pais'];
-                              }),
+                            icon: Icon(Icons.search),
+                            onPressed: () => _loadAdress(),
+                          ),
                           Text('Buscar CEP')
                         ],
                       ),
@@ -177,8 +149,8 @@ class _UserFormState extends State<UserForm> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            width: MediaQuery.of(context).size.width * 0.65,
+                          Expanded(
+                            flex: 7,
                             child: TextFormField(
                               keyboardType: TextInputType.text,
                               decoration: InputDecoration(
@@ -187,19 +159,15 @@ class _UserFormState extends State<UserForm> {
                               ),
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Campo não pode estar vazio';
-                                }
-                                return null;
-                              },
+                              initialValue: _formData['rua'],
+                              validator: (value) => _validFieldNotEmpty(value),
                               controller: _ruaCtrl,
-                              onSaved: (newValue) => endereco.rua = newValue,
+                              onSaved: (value) => _formData['rua'] = value,
                             ),
                           ),
-                          SizedBox(height: 10),
-                          Container(
-                            width: MediaQuery.of(context).size.width * 0.28,
+                          SizedBox(width: 10),
+                          Expanded(
+                            flex: 3,
                             child: TextFormField(
                               keyboardType: TextInputType.number,
                               decoration: InputDecoration(
@@ -208,13 +176,9 @@ class _UserFormState extends State<UserForm> {
                               ),
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Campo não pode estar vazio';
-                                }
-                                return null;
-                              },
-                              onSaved: (newValue) => endereco.numero = newValue,
+                              initialValue: _formData['numero'],
+                              validator: (value) => _validFieldNotEmpty(value),
+                              onSaved: (value) => _formData['numero'] = value,
                             ),
                           ),
                         ],
@@ -223,8 +187,8 @@ class _UserFormState extends State<UserForm> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            width: MediaQuery.of(context).size.width * 0.46,
+                          Expanded(
+                            flex: 5,
                             child: TextFormField(
                               keyboardType: TextInputType.text,
                               decoration: InputDecoration(
@@ -233,18 +197,15 @@ class _UserFormState extends State<UserForm> {
                               ),
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Campo não pode estar vazio';
-                                }
-                                return null;
-                              },
+                              initialValue: _formData['bairro'],
+                              validator: (value) => _validFieldNotEmpty(value),
                               controller: _bairroCtrl,
-                              onSaved: (newValue) => endereco.bairro = newValue,
+                              onSaved: (value) => _formData['bairro'] = value,
                             ),
                           ),
-                          Container(
-                            width: MediaQuery.of(context).size.width * 0.46,
+                          SizedBox(width: 10),
+                          Expanded(
+                            flex: 5,
                             child: TextFormField(
                               keyboardType: TextInputType.text,
                               decoration: InputDecoration(
@@ -253,24 +214,19 @@ class _UserFormState extends State<UserForm> {
                               ),
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Campo não pode estar vazio';
-                                }
-                                return null;
-                              },
+                              initialValue: _formData['cidade'],
+                              validator: (value) => _validFieldNotEmpty(value),
                               controller: _cidadeCtrl,
-                              onSaved: (newValue) => endereco.cidade = newValue,
+                              onSaved: (value) => _formData['cidade'] = value,
                             ),
                           ),
                         ],
                       ),
                       SizedBox(height: 10),
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Container(
-                            width: MediaQuery.of(context).size.width * 0.46,
+                          Expanded(
+                            flex: 1,
                             child: TextFormField(
                               keyboardType: TextInputType.text,
                               decoration: InputDecoration(
@@ -279,19 +235,17 @@ class _UserFormState extends State<UserForm> {
                               ),
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Campo não pode estar vazio';
-                                }
-                                return null;
-                              },
+                              initialValue: _formData['uf'],
+                              validator: (value) => _validFieldNotEmpty(value),
                               controller: _ufCtrl,
-                              onSaved: (newValue) => endereco.uf = newValue,
+                              onSaved: (value) => _formData['uf'] = value,
                             ),
                           ),
-                          SizedBox(height: 20),
-                          Container(
-                            width: MediaQuery.of(context).size.width * 0.46,
+                          SizedBox(
+                            width: 10,
+                          ),
+                          Expanded(
+                            flex: 1,
                             child: TextFormField(
                               keyboardType: TextInputType.text,
                               decoration: InputDecoration(
@@ -300,13 +254,10 @@ class _UserFormState extends State<UserForm> {
                               ),
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
-                              validator: (value) {
-                                if (value.isEmpty) {
-                                  return 'Campo não pode estar vazio';
-                                }
-                                return null;
-                              },
-                              onSaved: (newValue) => endereco.pais = newValue,
+                              initialValue: _formData['pais'],
+                              validator: (value) => _validFieldNotEmpty(value),
+                              controller: _paisCtrl,
+                              onSaved: (value) => _formData['pais'] = value,
                             ),
                           ),
                         ],
@@ -338,9 +289,9 @@ class _UserFormState extends State<UserForm> {
                       }
 
                       _formKey.currentState.save();
-                      this.showInformation();
-                      widget._cadastrar(user);
-                      Navigator.of(context).popAndPushNamed(AppRoutes.HOME);
+                      print(_formData['numero']);
+                      _fn(User.fromJson(_formData));
+                      Navigator.of(context).pop();
                     },
                     borderSide: BorderSide(
                       color: Colors.red,

@@ -10,14 +10,20 @@ import 'model/user.dart';
 
 void main() => runApp(App());
 
-class App extends StatelessWidget {
+class App extends StatefulWidget {
+  @override
+  _AppState createState() => _AppState();
+}
+
+class _AppState extends State<App> {
   final primaryColor = Colors.red;
 
   List<User> users = [];
 
-  void cadastrar(User user) {
-    print('${user.nome}');
-    users.add(user);
+  void _cadastrar(User user) {
+    setState(() {
+      users.add(user);
+    });
   }
 
   @override
@@ -42,10 +48,10 @@ class App extends StatelessWidget {
           brightness: Brightness.light,
           primaryColor: primaryColor,
         ),
-        home: UserList(users),
+        home: UserList(),
         routes: {
-          AppRoutes.HOME: (_) => UserList(users),
-          AppRoutes.USER_FORM: (_) => UserForm(cadastrar),
+          // AppRoutes.HOME: (_) => UserList(users),
+          AppRoutes.USER_FORM: (_) => UserForm(),
         },
       ),
     );
