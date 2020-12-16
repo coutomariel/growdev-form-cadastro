@@ -8,6 +8,7 @@ class UserForm extends StatelessWidget {
   final _formKey = GlobalKey<FormState>();
   final Map<String, Object> _formData = {};
 
+  final TextEditingController _cepCtrl = TextEditingController();
   final TextEditingController _ruaCtrl = TextEditingController();
   final TextEditingController _bairroCtrl = TextEditingController();
   final TextEditingController _cidadeCtrl = TextEditingController();
@@ -38,7 +39,7 @@ class UserForm extends StatelessWidget {
 
   Future<void> _loadAdress() async {
     final _cepService = CepService();
-    final data = await _cepService.getAdressByCep(_formData['cep']);
+    final data = await _cepService.getAdressByCep(_cepCtrl.text);
 
     _ruaCtrl.text = data['rua'];
     _bairroCtrl.text = data['bairro'];
@@ -52,7 +53,7 @@ class UserForm extends StatelessWidget {
     _formData['nome'] = user.nome;
     _formData['email'] = user.email;
     _formData['cpf'] = user.cpf;
-    _formData['cep'] = user.cep;
+    _cepCtrl.text = user.cep;
     _ruaCtrl.text = user.rua;
     _formData['numero'] = user.numero;
     _bairroCtrl.text = user.bairro;
@@ -133,6 +134,7 @@ class UserForm extends StatelessWidget {
                               autovalidateMode:
                                   AutovalidateMode.onUserInteraction,
                               initialValue: _formData['cep'],
+                              controller: _cepCtrl,
                               validator: (value) => _validFieldNotEmpty(value),
                               onSaved: (value) => _formData['cep'] = value,
                             ),
@@ -289,7 +291,6 @@ class UserForm extends StatelessWidget {
                       }
 
                       _formKey.currentState.save();
-                      print(_formData['numero']);
                       _fn(User.fromJson(_formData));
                       Navigator.of(context).pop();
                     },

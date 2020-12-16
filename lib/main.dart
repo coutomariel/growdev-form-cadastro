@@ -6,25 +6,10 @@ import 'package:form_cadastro/pages/user_form.dart';
 import 'package:form_cadastro/pages/user_list.dart';
 import 'package:form_cadastro/routes/app_routes.dart';
 
-import 'model/user.dart';
-
 void main() => runApp(App());
 
-class App extends StatefulWidget {
-  @override
-  _AppState createState() => _AppState();
-}
-
-class _AppState extends State<App> {
+class App extends StatelessWidget {
   final primaryColor = Colors.red;
-
-  List<User> users = [];
-
-  void _cadastrar(User user) {
-    setState(() {
-      users.add(user);
-    });
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +35,6 @@ class _AppState extends State<App> {
         ),
         home: UserList(),
         routes: {
-          // AppRoutes.HOME: (_) => UserList(users),
           AppRoutes.USER_FORM: (_) => UserForm(),
         },
       ),

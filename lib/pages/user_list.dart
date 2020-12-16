@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:form_cadastro/model/user.dart';
+import 'package:form_cadastro/repositories/user.repository.dart';
 import 'package:form_cadastro/routes/app_routes.dart';
 
 class UserList extends StatefulWidget {
@@ -8,29 +9,51 @@ class UserList extends StatefulWidget {
 }
 
 class _UserListState extends State<UserList> {
+  final UserRepository _repository = UserRepository();
+
   List<User> _users = [];
 
-  void _save(User user) {
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() {
+    _repository.getAllUsers().then((list) {
+      setState(() {
+        _users = list;
+      });
+    });
+  }
+
+  void _save(User user) async {
+    final int id = await _repository.create(user);
+    user.id = id;
     setState(() {
       _users.add(user);
     });
   }
 
-  void _update(User user) {
+  void _update(User user) async {
+    await _repository.update(user);
+
+    final index = _users.indexWhere((u) => u.id == user.id);
     setState(() {
-      print(user.id);
-      _users[user.id - 1] = user;
+      _users.replaceRange(index, index + 1, [user]);
     });
   }
 
-  void _delete(int index) {
+  _delete(int id) async {
+    await _repository.delete(id);
     setState(() {
-      _users.removeAt(index);
+      _users = _users.where((u) => u.id != id).toList();
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    // _load();
     return Scaffold(
       appBar: AppBar(
         title: Text('Listagem de usuários'),
@@ -43,21 +66,20 @@ class _UserListState extends State<UserList> {
             leading: CircleAvatar(
               child: Icon(Icons.person),
             ),
-            title: Text('${user.nome}'),
+            title: Text('${user.id} - ${user.nome}'),
             subtitle: Text('${user.email}'),
             trailing: IconButton(
               alignment: Alignment.topRight,
               icon: Icon(Icons.edit),
               color: Colors.red,
               onPressed: () {
-                user.id = index + 1;
                 Navigator.of(context).pushNamed(
                   AppRoutes.USER_FORM,
                   arguments: {'fn': _update, 'user': user},
                 );
               },
             ),
-            onLongPress: () => _delete(index),
+            onLongPress: () => _delete(user.id),
           );
         },
       ),
