@@ -1,12 +1,22 @@
+import 'dart:io';
+
 import 'package:cnpj_cpf_helper/cnpj_cpf_helper.dart';
 import 'package:email_validator/email_validator.dart';
 import 'package:flutter/material.dart';
 import 'package:form_cadastro/model/user.dart';
 import 'package:form_cadastro/service/cep.service.dart';
+import 'package:image_picker/image_picker.dart';
 
-class UserForm extends StatelessWidget {
+class UserForm extends StatefulWidget {
+  @override
+  _UserFormState createState() => _UserFormState();
+}
+
+class _UserFormState extends State<UserForm> {
   final _formKey = GlobalKey<FormState>();
   final Map<String, Object> _formData = {};
+
+  File file;
 
   final TextEditingController _cepCtrl = TextEditingController();
   final TextEditingController _ruaCtrl = TextEditingController();
@@ -84,187 +94,221 @@ class UserForm extends StatelessWidget {
               child: SingleChildScrollView(
                 child: Form(
                   key: _formKey,
-                  child: Column(
-                    children: [
-                      TextFormField(
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Nome completo',
+                  child: Container(
+                    child: Column(
+                      children: [
+                        CircleAvatar(
+                          radius: 90,
+                          backgroundColor: Colors.red.withOpacity(.2),
+                          child: GestureDetector(
+                            onTap: () async {
+                              var picker = ImagePicker();
+                              var pickedFile = await picker.getImage(
+                                source: ImageSource.camera,
+                              );
+                              setState(() {
+                                file = File(pickedFile.path);
+                              });
+                            },
+                            child: CircleAvatar(
+                              radius: 80,
+                              // backgroundImage: AssetImage('assets/avatar.jpeg'),
+                              backgroundImage: file != null
+                                  ? FileImage(file)
+                                  : NetworkImage(
+                                      'https://cdn.pixabay.com/photo/2016/03/31/19/57/avatar-1295404_960_720.png',
+                                    ),
+                            ),
+                          ),
                         ),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        initialValue: _formData['nome'],
-                        validator: (value) => _validFieldNotEmpty(value),
-                        onSaved: (value) => _formData['nome'] = value,
-                      ),
-                      SizedBox(height: 10),
-                      TextFormField(
-                        keyboardType: TextInputType.emailAddress,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'Email',
+                        SizedBox(height: 25),
+                        TextFormField(
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Nome completo',
+                          ),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          initialValue: _formData['nome'],
+                          validator: (value) => _validFieldNotEmpty(value),
+                          onSaved: (value) => _formData['nome'] = value,
                         ),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        initialValue: _formData['email'],
-                        validator: (value) => _validEmail(value),
-                        onSaved: (value) => _formData['email'] = value,
-                      ),
-                      SizedBox(height: 10),
-                      TextFormField(
-                        keyboardType: TextInputType.number,
-                        decoration: InputDecoration(
-                          border: OutlineInputBorder(),
-                          labelText: 'CPF',
+                        SizedBox(height: 10),
+                        TextFormField(
+                          keyboardType: TextInputType.emailAddress,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'Email',
+                          ),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          initialValue: _formData['email'],
+                          validator: (value) => _validEmail(value),
+                          onSaved: (value) => _formData['email'] = value,
                         ),
-                        autovalidateMode: AutovalidateMode.onUserInteraction,
-                        initialValue: _formData['cpf'],
-                        validator: (value) => _validCPF(value),
-                        onSaved: (value) => _formData['cpf'] = value,
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 5,
-                            child: TextFormField(
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'CEP',
+                        SizedBox(height: 10),
+                        TextFormField(
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            border: OutlineInputBorder(),
+                            labelText: 'CPF',
+                          ),
+                          autovalidateMode: AutovalidateMode.onUserInteraction,
+                          initialValue: _formData['cpf'],
+                          validator: (value) => _validCPF(value),
+                          onSaved: (value) => _formData['cpf'] = value,
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: TextFormField(
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'CEP',
+                                ),
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                initialValue: _formData['cep'],
+                                controller: _cepCtrl,
+                                validator: (value) =>
+                                    _validFieldNotEmpty(value),
+                                onSaved: (value) => _formData['cep'] = value,
                               ),
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              initialValue: _formData['cep'],
-                              controller: _cepCtrl,
-                              validator: (value) => _validFieldNotEmpty(value),
-                              onSaved: (value) => _formData['cep'] = value,
                             ),
-                          ),
-                          SizedBox(width: 20),
-                          IconButton(
-                            icon: Icon(Icons.search),
-                            onPressed: () => _loadAdress(),
-                          ),
-                          Text('Buscar CEP')
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            flex: 7,
-                            child: TextFormField(
-                              keyboardType: TextInputType.text,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'Rua',
+                            SizedBox(width: 20),
+                            IconButton(
+                              icon: Icon(Icons.search),
+                              onPressed: () => _loadAdress(),
+                            ),
+                            Text('Buscar CEP')
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              flex: 7,
+                              child: TextFormField(
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Rua',
+                                ),
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                initialValue: _formData['rua'],
+                                validator: (value) =>
+                                    _validFieldNotEmpty(value),
+                                controller: _ruaCtrl,
+                                onSaved: (value) => _formData['rua'] = value,
                               ),
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              initialValue: _formData['rua'],
-                              validator: (value) => _validFieldNotEmpty(value),
-                              controller: _ruaCtrl,
-                              onSaved: (value) => _formData['rua'] = value,
                             ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            flex: 3,
-                            child: TextFormField(
-                              keyboardType: TextInputType.number,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'Número',
+                            SizedBox(width: 10),
+                            Expanded(
+                              flex: 3,
+                              child: TextFormField(
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Número',
+                                ),
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                initialValue: _formData['numero'],
+                                validator: (value) =>
+                                    _validFieldNotEmpty(value),
+                                onSaved: (value) => _formData['numero'] = value,
                               ),
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              initialValue: _formData['numero'],
-                              validator: (value) => _validFieldNotEmpty(value),
-                              onSaved: (value) => _formData['numero'] = value,
                             ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Expanded(
-                            flex: 5,
-                            child: TextFormField(
-                              keyboardType: TextInputType.text,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'Bairro',
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Expanded(
+                              flex: 5,
+                              child: TextFormField(
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Bairro',
+                                ),
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                initialValue: _formData['bairro'],
+                                validator: (value) =>
+                                    _validFieldNotEmpty(value),
+                                controller: _bairroCtrl,
+                                onSaved: (value) => _formData['bairro'] = value,
                               ),
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              initialValue: _formData['bairro'],
-                              validator: (value) => _validFieldNotEmpty(value),
-                              controller: _bairroCtrl,
-                              onSaved: (value) => _formData['bairro'] = value,
                             ),
-                          ),
-                          SizedBox(width: 10),
-                          Expanded(
-                            flex: 5,
-                            child: TextFormField(
-                              keyboardType: TextInputType.text,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'Cidade',
+                            SizedBox(width: 10),
+                            Expanded(
+                              flex: 5,
+                              child: TextFormField(
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'Cidade',
+                                ),
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                initialValue: _formData['cidade'],
+                                validator: (value) =>
+                                    _validFieldNotEmpty(value),
+                                controller: _cidadeCtrl,
+                                onSaved: (value) => _formData['cidade'] = value,
                               ),
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              initialValue: _formData['cidade'],
-                              validator: (value) => _validFieldNotEmpty(value),
-                              controller: _cidadeCtrl,
-                              onSaved: (value) => _formData['cidade'] = value,
                             ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 10),
-                      Row(
-                        children: [
-                          Expanded(
-                            flex: 1,
-                            child: TextFormField(
-                              keyboardType: TextInputType.text,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'UF',
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              flex: 1,
+                              child: TextFormField(
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'UF',
+                                ),
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                initialValue: _formData['uf'],
+                                validator: (value) =>
+                                    _validFieldNotEmpty(value),
+                                controller: _ufCtrl,
+                                onSaved: (value) => _formData['uf'] = value,
                               ),
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              initialValue: _formData['uf'],
-                              validator: (value) => _validFieldNotEmpty(value),
-                              controller: _ufCtrl,
-                              onSaved: (value) => _formData['uf'] = value,
                             ),
-                          ),
-                          SizedBox(
-                            width: 10,
-                          ),
-                          Expanded(
-                            flex: 1,
-                            child: TextFormField(
-                              keyboardType: TextInputType.text,
-                              decoration: InputDecoration(
-                                border: OutlineInputBorder(),
-                                labelText: 'País',
+                            SizedBox(
+                              width: 10,
+                            ),
+                            Expanded(
+                              flex: 1,
+                              child: TextFormField(
+                                keyboardType: TextInputType.text,
+                                decoration: InputDecoration(
+                                  border: OutlineInputBorder(),
+                                  labelText: 'País',
+                                ),
+                                autovalidateMode:
+                                    AutovalidateMode.onUserInteraction,
+                                initialValue: _formData['pais'],
+                                validator: (value) =>
+                                    _validFieldNotEmpty(value),
+                                controller: _paisCtrl,
+                                onSaved: (value) => _formData['pais'] = value,
                               ),
-                              autovalidateMode:
-                                  AutovalidateMode.onUserInteraction,
-                              initialValue: _formData['pais'],
-                              validator: (value) => _validFieldNotEmpty(value),
-                              controller: _paisCtrl,
-                              onSaved: (value) => _formData['pais'] = value,
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),
