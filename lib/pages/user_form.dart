@@ -102,13 +102,37 @@ class _UserFormState extends State<UserForm> {
                           backgroundColor: Colors.red.withOpacity(.2),
                           child: GestureDetector(
                             onTap: () async {
-                              var picker = ImagePicker();
-                              var pickedFile = await picker.getImage(
-                                source: ImageSource.camera,
+                              var source = await showDialog<ImageSource>(
+                                context: context,
+                                barrierDismissible: false,
+                                child: AlertDialog(
+                                  title: Text('Escolha uma opção...'),
+                                  actions: [
+                                    FlatButton(
+                                      child: Text('Galeria'),
+                                      onPressed: () {
+                                        Navigator.pop(
+                                            context, ImageSource.gallery);
+                                      },
+                                    ),
+                                    FlatButton(
+                                      child: Text('Camera'),
+                                      onPressed: () {
+                                        Navigator.pop(
+                                            context, ImageSource.camera);
+                                      },
+                                    ),
+                                  ],
+                                ),
                               );
-                              setState(() {
-                                file = File(pickedFile.path);
-                              });
+                              var picker = ImagePicker();
+                              var pickedFile =
+                                  await picker.getImage(source: source);
+                              if (pickedFile != null) {
+                                setState(() {
+                                  file = File(pickedFile.path);
+                                });
+                              }
                             },
                             child: CircleAvatar(
                               radius: 80,
