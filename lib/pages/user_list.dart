@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:form_cadastro/model/user.dart';
 import 'package:form_cadastro/repositories/user.repository.dart';
@@ -65,7 +67,7 @@ class _UserListState extends State<UserList> {
           return ListTile(
             leading: CircleAvatar(
               backgroundImage: user.image != null 
-                ? AssetImage(user.image)
+                ? FileImage(File(user.image))
                 : AssetImage('assets/avatar.jpeg'),
             ),
             title: Text('${user.nome}'),

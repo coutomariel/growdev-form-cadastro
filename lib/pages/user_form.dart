@@ -71,9 +71,8 @@ class _UserFormState extends State<UserForm> {
     _ufCtrl.text = user.uf;
     _paisCtrl.text = user.pais;
     setState(() {
-      file = user.image != null ? File(user.image) : AssetImage('assets/avatar.jpeg');
+      file = user.image != null ? File(user.image) : null;
     });
-    // file = user.image != null ? File(user.image) : AssetImage('assets/avatar.jpeg');
   }
 
   @override
@@ -140,11 +139,14 @@ class _UserFormState extends State<UserForm> {
                                 });
                               }
                             },
-                            child: CircleAvatar(
+                            child: Hero(
+                              tag: _user?.id?.toString() ?? '',
+                              child: CircleAvatar(
                               radius: 80,
                               backgroundImage: file != null
-                                  ? FileImage(file)
-                                  : AssetImage('assets/avatar.jpeg')
+                                ? FileImage(file)
+                                : AssetImage('assets/avatar.jpeg')
+                              ),
                             ),
                           ),
                         ),
