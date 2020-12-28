@@ -64,26 +64,45 @@ class _UserListState extends State<UserList> {
         itemCount: _users.length,
         itemBuilder: (context, index) {
           final user = _users.elementAt(index);
-          return ListTile(
-            leading: CircleAvatar(
-              backgroundImage: user.image != null 
-                ? FileImage(File(user.image))
-                : AssetImage('assets/avatar.jpeg'),
+          return Dismissible(
+            key: Key(user.id.toString()),
+            direction: DismissDirection.endToStart,
+            background: Container(
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.end,
+                children: [
+                  Icon(
+                    Icons.delete,
+                  ),
+                  SizedBox(width: 10),
+                  Text("Removendo..."),
+                ],
+              ),
+              color: Colors.red.withOpacity(.2),
             ),
-            title: Text('${user.nome}'),
-            subtitle: Text('${user.email}'),
-            trailing: IconButton(
-              alignment: Alignment.topRight,
-              icon: Icon(Icons.edit),
-              color: Colors.red,
-              onPressed: () {
-                Navigator.of(context).pushNamed(
-                  AppRoutes.USER_FORM,
-                  arguments: {'fn': _update, 'user': user},
-                );
-              },
+            onDismissed: (direction) {
+              _delete(user.id);
+            },
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundImage: user.image != null 
+                  ? FileImage(File(user.image))
+                  : AssetImage('assets/avatar.jpeg'),
+              ),
+              title: Text('${user.nome}'),
+              subtitle: Text('${user.email}'),
+              trailing: IconButton(
+                alignment: Alignment.topRight,
+                icon: Icon(Icons.edit),
+                color: Colors.red,
+                onPressed: () {
+                  Navigator.of(context).pushNamed(
+                    AppRoutes.USER_FORM,
+                    arguments: {'fn': _update, 'user': user},
+                  );
+                },
+              ),
             ),
-            onLongPress: () => _delete(user.id),
           );
         },
       ),
