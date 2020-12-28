@@ -1,3 +1,5 @@
+const int DB_VERSION = 1;
+
 const String DATABASE_NAME = 'users.db';
 const String TABLE_USER = 'user';
 
@@ -13,6 +15,7 @@ const String CREATE_USER_TABLE_SCRIPT = '''
     bairro TEXT,
     cidade TEXT,
     uf TEXT,
-    pais TEXT
+    pais TEXT,
+    image TEXT
   );
   ''';

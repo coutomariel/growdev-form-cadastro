@@ -64,9 +64,11 @@ class _UserListState extends State<UserList> {
           final user = _users.elementAt(index);
           return ListTile(
             leading: CircleAvatar(
-              child: Icon(Icons.person),
+              backgroundImage: user.image != null 
+                ? AssetImage(user.image)
+                : AssetImage('assets/avatar.jpeg'),
             ),
-            title: Text('${user.id} - ${user.nome}'),
+            title: Text('${user.nome}'),
             subtitle: Text('${user.email}'),
             trailing: IconButton(
               alignment: Alignment.topRight,

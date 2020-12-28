@@ -70,6 +70,10 @@ class _UserFormState extends State<UserForm> {
     _cidadeCtrl.text = user.cidade;
     _ufCtrl.text = user.uf;
     _paisCtrl.text = user.pais;
+    setState(() {
+      file = user.image != null ? File(user.image) : AssetImage('assets/avatar.jpeg');
+    });
+    // file = user.image != null ? File(user.image) : AssetImage('assets/avatar.jpeg');
   }
 
   @override
@@ -129,19 +133,18 @@ class _UserFormState extends State<UserForm> {
                               var pickedFile =
                                   await picker.getImage(source: source);
                               if (pickedFile != null) {
+                                _formData['image'] = pickedFile.path;
                                 setState(() {
                                   file = File(pickedFile.path);
+                                  print(file);
                                 });
                               }
                             },
                             child: CircleAvatar(
                               radius: 80,
-                              // backgroundImage: AssetImage('assets/avatar.jpeg'),
                               backgroundImage: file != null
                                   ? FileImage(file)
-                                  : NetworkImage(
-                                      'https://cdn.pixabay.com/photo/2016/03/31/19/57/avatar-1295404_960_720.png',
-                                    ),
+                                  : AssetImage('assets/avatar.jpeg')
                             ),
                           ),
                         ),
@@ -357,7 +360,6 @@ class _UserFormState extends State<UserForm> {
                         ));
                         return;
                       }
-
                       _formKey.currentState.save();
                       _fn(User.fromJson(_formData));
                       Navigator.of(context).pop();

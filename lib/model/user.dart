@@ -1,3 +1,5 @@
+import 'dart:io';
+
 class User {
   int id;
   String nome;
@@ -10,6 +12,7 @@ class User {
   String cidade;
   String uf;
   String pais;
+  String image;
 
   User({
     this.nome,
@@ -22,6 +25,7 @@ class User {
     this.cidade,
     this.uf,
     this.pais,
+    this.image,
   });
 
   User.fromJson(Map<String, dynamic> json) {
@@ -36,6 +40,7 @@ class User {
     cidade = json['cidade'];
     uf = json['uf'];
     pais = json['pais'];
+    image = json['image'];// != null ? File(json['image']) : null;
   }
 
   Map<String, dynamic> toJson() {
@@ -50,6 +55,7 @@ class User {
     data['cidade'] = this.cidade;
     data['uf'] = this.uf;
     data['pais'] = this.pais;
+    data['image'] = this.image;//?.path;
     return data;
   }
 }
